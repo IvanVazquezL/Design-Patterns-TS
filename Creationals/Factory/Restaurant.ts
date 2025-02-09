@@ -14,6 +14,12 @@ class BeefBurger implements Burger {
     }
 }
 
+class BeanBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Bean Burger: Grilling bean patty, adding cheese, lettuce, tomato, and sauce.");
+    }
+}
+
 abstract class Restaurant {
     abstract createBurger(): Burger;
 
@@ -34,3 +40,36 @@ class BeefRestaurant extends Restaurant {
         return new BeefBurger();
     }
 }
+
+class BeanRestaurant extends Restaurant {
+    override createBurger(): Burger {
+        return new BeanBurger();
+    }
+}
+
+import promptSync from "prompt-sync";
+
+function main() {
+    let restaurant: Restaurant;
+    const prompt = promptSync();
+
+    const burgerType = prompt('Select burger (beef/chicken/bean)');
+
+    switch(burgerType) {
+        case 'chicken':
+            restaurant = new ChickenRestaurant();
+            break;
+        case 'beef':
+            restaurant = new BeefRestaurant();
+            break;
+        case 'bean':
+            restaurant = new BeefRestaurant();
+            break;
+        default:
+            break;
+    }
+
+    restaurant.orderBurger();
+}
+
+main();
