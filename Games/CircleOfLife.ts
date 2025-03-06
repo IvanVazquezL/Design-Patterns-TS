@@ -40,8 +40,8 @@ namespace CircleOfLife {
 
     class Tile {
         constructor(
-            private type: string,
-            private number: number
+            public type: string,
+            public number: number
         ) {}
     }
 
@@ -67,6 +67,16 @@ namespace CircleOfLife {
         getTile(position: number): Tile {
             return this.tiles[position];
         }
+
+        incrementHarvestTiles(): void {
+            const harvests = this.tiles.filter(
+                tile => tile.type === 'harvest'
+            );
+
+            for (const harvest of harvests) {
+                harvest.number *= 2;
+            }
+        }
     }
 
     class Player {
@@ -90,6 +100,18 @@ namespace CircleOfLife {
 
         isWinner(): boolean {
             return this.mushrooms >= 400;
+        }
+
+        setTileNumber(tileNumber: number): void {
+            this.tileNumber = tileNumber;
+        }
+
+        getMushrooms(): number {
+            return this.mushrooms;
+        }
+
+        addMushrooms(mushrooms: number): void {
+            this.mushrooms += mushrooms;
         }
 
         displayPlayersStatus(): void {
@@ -122,17 +144,32 @@ namespace CircleOfLife {
                 2 - Harvest & Roll dice`);
 
             if (option === '2') {
-                const harvest = await prompt.ask(`How much mushrooms to harvest?`);
-                
+                const harvestAnswer = await prompt.ask(`How much mushrooms to harvest?`);
+                const harvest = parseInt(harvestAnswer);
+                const playersMushrooms = currentPlayer.getMushrooms();
+                const mushroomsToUse = harvest >= playersMushrooms ?
+                    playersMushrooms :
+                    harvest;
+                currentPlayer.addMushrooms(-mushroomsToUse);
+                const tileToModify = board.getTile(currentPlayer.getTileNumber());
+
+                tileToModify.type = 'harvest';
+                tileToModify.number = mushroomsToUse;
             }
 
 
             const roll = GameUtils.rollTwoDice();
             const newPosition = board.getNewPosition(currentPlayer.getTileNumber());
             const currentTile = board.getTile(newPosition);
+            currentPlayer.setTileNumber(newPosition);
+            currentPlayer.addMushrooms(currentTile.number);
+
+            currentTile.number = 0;
+            currentTile.type = 'Empty';
 
             currentPlayer = currentPlayer === player1 ? player2 : player1;
-            break;
+
+            board.incrementHarvestTiles();
         }
 
         prompt.close();
